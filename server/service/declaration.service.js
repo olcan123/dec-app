@@ -173,3 +173,43 @@ export const createNextPeriodDeclarations = async ({
   }
 };
 // ANCHOR_END: createNextPeriodDeclarations
+
+// ANCHOR: deleteDeclarationsByCustomerId
+export const deleteDeclarationsByCustomerId = async (customerId) => {
+  try {
+    const numericCustomerId = toNumericId(customerId);
+
+    const result = await prisma.declaration.deleteMany({
+      where: { customerId: numericCustomerId },
+    });
+
+    // result has shape { count: number }
+    return result;
+  } catch (error) {
+    console.error("Error deleting declarations by customer ID:", error);
+    throw new Error("Could not delete declarations for customer");
+  }
+};
+// ANCHOR_END: deleteDeclarationsByCustomerId
+
+// ANCHOR: deleteDeclarationsByPeriodName
+export const deleteDeclarationsByPeriodName = async (periodName) => {
+  try {
+    if (!periodName) {
+      throw new Error('Period name is required');
+    }
+
+    const normalized = String(periodName);
+    console.debug('[service] deleteDeclarationsByPeriodName:', normalized);
+
+    const result = await prisma.declaration.deleteMany({
+      where: { periodName: normalized },
+    });
+
+    return result; // { count }
+  } catch (error) {
+    console.error('Error deleting declarations by period name:', error);
+    throw new Error('Could not delete declarations for period');
+  }
+};
+// ANCHOR_END: deleteDeclarationsByPeriodName

@@ -5,7 +5,18 @@
       :description="pageDescription"
       action-label="Dönemlere Dön"
       @action="goBack"
-    />
+    >
+      <template #actions>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-200"
+          :disabled="!periodName || loading.value"
+          @click="confirmAndDeletePeriod"
+        >
+          Dönemi Sil
+        </button>
+      </template>
+    </PagesHeader>
 
     <DataTable
       :columns="columns"
@@ -86,7 +97,7 @@ const customerStore = useCustomerStore();
 const declarationStore = useDeclarationStore();
 
 const { customers } = storeToRefs(customerStore);
-const { declarations, declarationTypes } = storeToRefs(declarationStore);
+const { declarations, declarationTypes, loading } = storeToRefs(declarationStore);
 
 const ensureData = async () => {
   const tasks = [];
@@ -329,5 +340,33 @@ const resolveRowHighlight = (row) => {
   }
 
   return "";
+};
+
+const confirmAndDeletePeriod = async () => {
+  if (!periodName.value) return;
+
+  const confirmed = window.confirm(
+    `"${periodName.value}" dönemine ait tüm beyanlar kalıcı olarak silinecek. Devam etmek istediğinize emin misiniz?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await declarationStore.deleteDeclarationsByPeriodName(periodName.value);
+
+    toast.success({
+      title: 'Dönem Silindi',
+      message: `${periodName.value} dönemine ait tüm beyanlar silindi.`,
+    });
+
+    // go back to customer period list
+    goBack();
+  } catch (err) {
+    console.error('Dönem silinemedi', err);
+    toast.error({
+      title: 'Hata',
+      message: 'Dönem silinirken bir hata oluştu. Lütfen tekrar deneyin.',
+    });
+  }
 };
 </script>

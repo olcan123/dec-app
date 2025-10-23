@@ -24,10 +24,22 @@
           type="button"
           class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-indigo-300 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           :disabled="!canGenerateNextPeriod || loading.value"
-          :class="{ 'cursor-not-allowed opacity-60': !canGenerateNextPeriod || loading.value }"
+          :class="{
+            'cursor-not-allowed opacity-60':
+              !canGenerateNextPeriod || loading.value,
+          }"
           @click="openNextPeriodModal"
         >
           Sonraki Dönemi Oluştur
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-200"
+          :disabled="loading.value"
+          :class="{ 'cursor-not-allowed opacity-60': loading.value }"
+          @click="confirmAndDeleteCustomerDeclarations"
+        >
+          Tüm Beyanları Sil
         </button>
       </template>
       <template #cell-completionSummary="{ row }">
@@ -43,13 +55,23 @@
         </span>
       </template>
       <template #cell-actions="{ row }">
-        <button
-          type="button"
-          class="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-indigo-600 transition hover:border-indigo-300 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-          @click="handleSelectPeriod(row.periodName)"
-        >
-          Detay
-        </button>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            class="inline-flex items-center rounded-lg border border-slate-200 px-3 py-1 text-xs font-medium text-indigo-600 transition hover:border-indigo-300 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            @click="handleSelectPeriod(row.periodName)"
+          >
+            Detay
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-lg border border-rose-200 px-3 py-1 text-xs font-medium text-rose-600 transition hover:border-rose-300 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-200"
+            :disabled="loading.value"
+            @click="confirmAndDeletePeriodFromList(row.periodName)"
+          >
+            Dönemi Sil
+          </button>
+        </div>
       </template>
     </DataTable>
 
@@ -102,7 +124,8 @@ const customerStore = useCustomerStore();
 const declarationStore = useDeclarationStore();
 
 const { customers } = storeToRefs(customerStore);
-const { declarations, declarationTypes, loading } = storeToRefs(declarationStore);
+const { declarations, declarationTypes, loading } =
+  storeToRefs(declarationStore);
 
 const ensureData = async () => {
   const tasks = [];
@@ -137,9 +160,8 @@ const showNextPeriodModal = ref(false);
 
 const declarationsForCustomer = computed(() =>
   declarations.value.filter(
-    (item) =>
-      String(item?.customerId ?? "") === String(customerId.value ?? ""),
-  ),
+    (item) => String(item?.customerId ?? "") === String(customerId.value ?? "")
+  )
 );
 
 const latestPeriod = computed(() => {
@@ -176,7 +198,7 @@ const latestPeriodDeclarations = computed(() => {
   }
 
   return declarationsForCustomer.value.filter(
-    (item) => String(item?.periodName ?? "") === latestPeriodName.value,
+    (item) => String(item?.periodName ?? "") === latestPeriodName.value
   );
 });
 
@@ -203,11 +225,11 @@ const modalItems = computed(() =>
       customerTitle: pageTitle.value,
       periodName: nextPeriodName.value,
     };
-  }),
+  })
 );
 
-const modalTitle = computed(() =>
-  `${pageTitle.value} • ${nextPeriodName.value || "Sonraki Dönem"}`
+const modalTitle = computed(
+  () => `${pageTitle.value} • ${nextPeriodName.value || "Sonraki Dönem"}`
 );
 
 const modalDescription = computed(() =>
@@ -217,18 +239,18 @@ const modalDescription = computed(() =>
 );
 
 const canGenerateNextPeriod = computed(
-  () => Boolean(nextPeriodName.value) && modalItems.value.length > 0,
+  () => Boolean(nextPeriodName.value) && modalItems.value.length > 0
 );
 
 const customerId = computed(() => route.params.customerId ?? null);
 const hasNestedRoute = computed(() => Boolean(route.params.periodName));
 
 const customerSummaries = computed(() =>
-  buildCustomerSummaries(customers.value, declarations.value),
+  buildCustomerSummaries(customers.value, declarations.value)
 );
 
 const customerSummary = computed(() =>
-  getCustomerSummaryById(customerSummaries.value, customerId.value),
+  getCustomerSummaryById(customerSummaries.value, customerId.value)
 );
 
 const periodRows = computed(() => {
@@ -244,14 +266,18 @@ const periodRows = computed(() => {
   }));
 });
 
-const fallbackCustomer = computed(() =>
-  customers.value.find(
-    (customer) => String(customer.id) === String(customerId.value ?? ""),
-  ) ?? null,
+const fallbackCustomer = computed(
+  () =>
+    customers.value.find(
+      (customer) => String(customer.id) === String(customerId.value ?? "")
+    ) ?? null
 );
 
 const pageTitle = computed(
-  () => customerSummary.value?.customerTitle ?? fallbackCustomer.value?.title ?? "Müşteri bulunamadı",
+  () =>
+    customerSummary.value?.customerTitle ??
+    fallbackCustomer.value?.title ??
+    "Müşteri bulunamadı"
 );
 
 const columns = [
@@ -283,7 +309,9 @@ const handleSelectPeriod = (periodName) => {
   }
 
   navigateTo(
-    `/declarations/by-customer/${customerId.value}/by-period/${encodeURIComponent(periodName)}`,
+    `/declarations/by-customer/${
+      customerId.value
+    }/by-period/${encodeURIComponent(periodName)}`
   );
 };
 
@@ -297,6 +325,60 @@ const openNextPeriodModal = () => {
   }
 
   showNextPeriodModal.value = true;
+};
+
+const confirmAndDeleteCustomerDeclarations = async () => {
+  if (!customerId.value) return;
+
+  const confirmed = window.confirm(
+    "Seçili müşteriye ait tüm beyanlar kalıcı olarak silinecek. Devam etmek istediğinize emin misiniz?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await declarationStore.deleteDeclarationsByCustomerId(customerId.value);
+
+    toast.success({
+      title: "Beyanlar Silindi",
+      message: "Seçili müşteriye ait tüm beyanlar silindi.",
+    });
+
+    await refresh();
+  } catch (err) {
+    console.error("Beyanlar silinemedi", err);
+    toast.error({
+      title: "Hata",
+      message: "Beyanlar silinemedi. Lütfen tekrar deneyin.",
+    });
+  }
+};
+
+const confirmAndDeletePeriodFromList = async (periodToDelete) => {
+  if (!periodToDelete) return;
+
+  const confirmed = window.confirm(
+    `"${periodToDelete}" dönemine ait tüm müşterilerdeki beyanlar kalıcı olarak silinecek. Devam etmek istediğinize emin misiniz?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await declarationStore.deleteDeclarationsByPeriodName(periodToDelete);
+
+    toast.success({
+      title: "Dönem Silindi",
+      message: `${periodToDelete} dönemine ait beyanlar silindi.`,
+    });
+
+    await refresh();
+  } catch (err) {
+    console.error("Dönem silinemedi", err);
+    toast.error({
+      title: "Hata",
+      message: "Dönem silinirken bir hata oluştu. Lütfen tekrar deneyin.",
+    });
+  }
 };
 
 const handleNextPeriodConfirm = async (items) => {
