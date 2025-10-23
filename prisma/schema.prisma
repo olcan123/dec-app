@@ -1,0 +1,230 @@
+// PostgreSQL için düzenlenmiş Prisma Şeması (Muhasebe Takip Sistemi)
+// Hata Çözümü: Tanınmayan tüm @comment nitelikleri kaldırıldı.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Supabase/PostgreSQL Bağlantısı
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUM TANIMLARI ---
+
+// Beyanname Türleri Tablosu için Öncelik Seviyesi
+enum DeclarationPriorityLevel {
+  Low
+  Medium
+  High
+  Critical
+
+  @@map(name: "priority_level")
+}
+
+// Beyanname Türleri Tablosu için Periyot
+enum DeclarationPeriod {
+  Monthly
+  Quarterly
+  SemiAnnual
+  Annual
+
+  @@map(name: "period")
+}
+
+// Beyannameler Tablosu için Durum
+enum DeclarationStatus {
+  Pending
+  InProgress
+  Completed
+  Overdue
+
+  @@map(name: "declaration_status")
+}
+
+// Beyannameler Tablosu için Öncelik
+enum DeclarationPriority {
+  Low
+  Medium
+  High
+  Urgent
+
+  @@map(name: "declaration_priority")
+}
+
+// Genel Notlar Tablosu için Kategori
+enum GeneralNoteCategory {
+  General
+  Meeting
+  Reminder
+  Important
+  Other
+
+  @@map(name: "general_note_category")
+}
+
+// Hatırlatmalar Tablosu için Hatırlatma Tipi
+enum ReminderType {
+  Email
+  SMS
+  System
+  Manual
+
+  @@map(name: "reminder_type")
+}
+
+// Hatırlatmalar Tablosu için Tekrar
+enum ReminderRecurrence {
+  Once
+  Daily
+  Weekly
+  Monthly
+
+  @@map(name: "reminder_recurrence")
+}
+
+// --- MODELLER (TABLOLAR) ---
+
+// 1. Customers (MÜŞTERİLER)
+model Customer {
+  id               Int      @id @default(autoincrement())
+  uidNumber        String   @unique @map("uid_number")
+  title            String
+  authorizedPerson String?  @map("authorized_person")
+  taxOffice        String?  @map("tax_office") 
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  notes            String?  @db.Text
+
+  // İlişkiler
+  Declarations  Declaration[]
+  GeneralNotes  GeneralNote[]
+  Documents     Document[]
+  Reminders     Reminder[]
+
+  @@map(name: "Customers")
+}
+
+// 2. DeclarationTypes (BEYANNAME TÜRLERİ)
+model DeclarationType {
+  id              Int                        @id @default(autoincrement())
+  typeName        String                     @map("type_name")
+  description     String?                    @db.Text
+  defaultDay      Int?                       @map("default_day") // Day of the month (e.g., 26)
+  period          DeclarationPeriod          @default(Monthly)
+  isActive        Boolean                    @default(true) @map("is_active")
+  colorCode       String?                    @map("color_code") @db.VarChar(7) // Hex color code (#FF5733)
+  priorityLevel   DeclarationPriorityLevel   @default(Medium) @map("priority_level")
+
+  // İlişkiler
+  Declarations Declaration[]
+
+  @@map(name: "DeclarationTypes")
+}
+
+// 3. Declarations (BEYANNAMELER)
+model Declaration {
+  id              Int                   @id @default(autoincrement())
+  customerId      Int?                  @map("customer_id")
+  typeId          Int                   @map("type_id")
+  periodName      String                @map("period_name") @db.VarChar(50) // E.g., Ekim 2025, 2025/3
+  dueDate         DateTime              @map("due_date") @db.Date
+  completionDate  DateTime?             @map("completion_date")
+  status          DeclarationStatus     @default(Pending)
+  reminderDays    Int                   @default(7) @map("reminder_days") // Remind how many days in advance
+  totalAmount     Decimal?              @map("total_amount") @db.Decimal(15, 2)
+  paidAmount      Decimal               @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  lateFee         Decimal               @default(0) @map("late_fee") @db.Decimal(15, 2)
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  completedBy     String?               @map("completed_by")
+  priority        DeclarationPriority   @default(Medium)
+
+  // İlişkiler
+  Customer          Customer?           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  DeclarationType   DeclarationType     @relation(fields: [typeId], references: [id])
+  DeclarationNotes  DeclarationNote[]
+  Documents         Document[]
+  Reminders         Reminder[]
+
+  @@map(name: "Declarations")
+}
+
+// 4. DeclarationNotes (BEYANNAME NOTLARI)
+model DeclarationNote {
+  id             Int       @id @default(autoincrement())
+  declarationId  Int       @map("declaration_id")
+  title          String?
+  content        String    @db.Text
+  createdBy      String?   @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  tags           String?   @map("tags") // Comma separated tags
+
+  // İlişkiler
+  Declaration Declaration @relation(fields: [declarationId], references: [id], onDelete: Cascade)
+
+  @@map(name: "DeclarationNotes")
+}
+
+// 5. GeneralNotes (GENEL NOTLAR)
+model GeneralNote {
+  id             Int                 @id @default(autoincrement())
+  customerId     Int?                @map("customer_id")
+  category       GeneralNoteCategory @default(General)
+  title          String
+  content        String              @db.Text
+  createdBy      String?             @map("created_by")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  reminderDate   DateTime?           @map("reminder_date") @db.Date
+  isCompleted    Boolean             @default(false) @map("is_completed")
+  tags           String?
+
+  // İlişkiler
+  Customer Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map(name: "GeneralNotes")
+}
+
+// 6. Documents (BELGELER)
+model Document {
+  id             Int       @id @default(autoincrement())
+  declarationId  Int?      @map("declaration_id")
+  customerId     Int?      @map("customer_id")
+  documentName   String    @map("document_name")
+  filePath       String    @map("file_path") @db.VarChar(500)
+  fileType       String?   @map("file_type") @db.VarChar(50)
+  fileSizeBytes  Int?      @map("file_size_bytes") // In bytes
+  description    String?   @db.Text
+  uploadedAt     DateTime  @default(now()) @map("uploaded_at")
+  uploadedBy     String?   @map("uploaded_by")
+
+  // İlişkiler
+  Declaration Declaration? @relation(fields: [declarationId], references: [id], onDelete: Cascade)
+  Customer    Customer?    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map(name: "Documents")
+}
+
+// 7. Reminders (HATIRLATMALAR)
+model Reminder {
+  id               Int                @id @default(autoincrement())
+  declarationId    Int?               @map("declaration_id")
+  customerId       Int?               @map("customer_id")
+  reminderDate     DateTime           @map("reminder_date")
+  reminderType     ReminderType       @default(System) @map("reminder_type")
+  message          String?            @db.Text
+  isSent           Boolean            @default(false) @map("is_sent")
+  sentAt           DateTime?          @map("sent_at")
+  recurrence       ReminderRecurrence @default(Once)
+  isActive         Boolean            @default(true) @map("is_active")
+
+  // İlişkiler
+  Declaration Declaration? @relation(fields: [declarationId], references: [id], onDelete: Cascade)
+  Customer    Customer?    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map(name: "Reminders")
+}
