@@ -49,7 +49,7 @@ import DataTable from "~/components/table/index.vue";
 const declarationStore = useDeclarationStore();
 const { declarationTypes, loading, error } = storeToRefs(declarationStore);
 
-fetchDeclarationTypesSafely = async () => {
+const fetchDeclarationTypesSafely = async () => {
   try {
     await declarationStore.fetchDeclarationTypes();
   } catch (err) {

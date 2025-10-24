@@ -238,29 +238,16 @@ watch(
   ([open]) => {
     if (!open) return;
 
-    // If modal opened, attempt to auto-fill newPeriodName from existing normalized items' latest period
+    // If modal opened, initialize newPeriodName.
+    // Prefer the explicit prop `nextPeriodName` (caller-provided target). If not present,
+    // fall back to the first normalized item's periodName without incrementing it (items
+    // passed from caller may already contain the intended next period).
     if (!newPeriodName.value) {
-      const firstPeriod = normalizedItems.value?.[0]?.periodName;
-      if (firstPeriod) {
-        // try to parse MM/YYYY
-        const m = String(firstPeriod).trim();
-        const match = m.match(/^(0?[1-9]|1[0-2])\/(\d{4})$/);
-        if (match) {
-          let month = Number(match[1]);
-          let year = Number(match[2]);
-          // next period
-          month += 1;
-          if (month > 12) {
-            month = 1;
-            year += 1;
-          }
-          newPeriodName.value = `${String(month).padStart(2, "0")}/${year}`;
-        } else {
-          // fallback to provided prop
-          newPeriodName.value = nextPeriodName.value || "";
-        }
+      if (nextPeriodName.value) {
+        newPeriodName.value = nextPeriodName.value;
       } else {
-        newPeriodName.value = nextPeriodName.value || "";
+        const firstPeriod = normalizedItems.value?.[0]?.periodName;
+        newPeriodName.value = firstPeriod ?? "";
       }
     }
 
