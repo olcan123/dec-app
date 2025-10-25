@@ -36,6 +36,14 @@ const declarationFormSchema = z.object({
   priority: z.string().min(1, "Öncelik zorunludur."),
   completionDate: z.string().optional(),
   completedBy: z.string().optional(),
+ notes: z.array(
+      z.object({
+        id: z.union([z.number(), z.undefined()]), // Önceki düzenlememiz
+        title: z.string().min(1, 'Başlık alanı zorunludur'),
+        content: z.string().min(1, 'İçerik alanı zorunludur'),
+        tags: z.string().optional(),
+      })
+    ).optional(),
 });
 
 const declarationFormInitialValues = {
@@ -51,6 +59,7 @@ const declarationFormInitialValues = {
   priority: "Medium",
   completionDate: "",
   completedBy: "Admin",
+  notes: [],
 };
 
 // Status options cover the dropdown on both create/update forms for consistent labels and values.
