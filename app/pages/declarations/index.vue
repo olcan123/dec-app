@@ -23,6 +23,39 @@
       </template>
     </PagesHeader>
 
+    <!-- Period selector: styled search input + button -->
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+      <div v-if="true" class="relative w-full max-w-sm">
+        <label class="sr-only" for="period-select">Dönem seç</label>
+        <input
+          id="period-select"
+          list="period-list"
+          v-model="selectedPeriod"
+          type="search"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-inner transition placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          :placeholder="'Dönem seç (örn. 10/2025)'"
+          aria-label="Dönem seç"
+        />
+
+
+
+        <datalist id="period-list">
+          <option v-for="p in distinctPeriods" :key="p" :value="p">{{ p }}</option>
+        </datalist>
+      </div>
+
+      <div class="flex-shrink-0">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:opacity-60"
+          :disabled="!selectedPeriod"
+          @click="openPeriod"
+        >
+          Dönemi Göster
+        </button>
+      </div>
+    </div>
+
     <DataTable
       :columns="columns"
       :rows="customerSummaryRows"
@@ -369,5 +402,24 @@ const completionBadgeClass = (row) => {
   }
 
   return `${base} border-slate-200 bg-slate-50 text-slate-500`;
+};
+
+// Period selector state & helpers
+const selectedPeriod = ref('');
+const distinctPeriods = computed(() => {
+  try {
+    const set = new Set((declarations.value || []).map((d) => d?.periodName).filter(Boolean));
+    // sort by natural order (you can adjust to date-based order if you have YYYY/MM format)
+    return Array.from(set).sort();
+  } catch (e) {
+    return [];
+  }
+});
+
+const openPeriod = () => {
+  if (!selectedPeriod.value) return;
+  // encode so values like 10/2025 are safe in the URL
+  const encoded = encodeURIComponent(selectedPeriod.value);
+  navigateTo(`/declarations/by-period/${encoded}`);
 };
 </script>

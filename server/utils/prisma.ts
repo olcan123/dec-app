@@ -1,6 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient as PrismaClientType } from "@prisma/client";
+import { createRequire } from "node:module";
 
-type PrismaClientType = PrismaClient;
+const require = createRequire(import.meta.url);
+const { PrismaClient } = require("@prisma/client") as typeof import("@prisma/client");
 
 const prismaClientSingleton = () => {
   return new PrismaClient();
@@ -14,11 +16,7 @@ const globalWithPrisma = globalThis as GlobalWithPrisma;
 
 const prisma = globalWithPrisma.prismaGlobal ?? prismaClientSingleton();
 
-const isProduction =
-  (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
-    ?.NODE_ENV === "production";
-
-if (!isProduction) {
+if (process.env.NODE_ENV !== "production") {
   globalWithPrisma.prismaGlobal = prisma;
 }
 

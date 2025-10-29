@@ -46,6 +46,38 @@ export const useDeclarationStore = defineStore("Declaration", () => {
   };
   // ANCHOR_END: fetchDeclarations
 
+  // ANCHOR: fetchDeclarationsByPeriodName
+  const fetchDeclarationsByPeriodName = async (periodName) => {
+    if (!periodName) throw new Error('periodName is required');
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      // Use query param to safely pass values like "MM/YYYY" which contain '/'
+      const encoded = encodeURIComponent(periodName);
+      const response = await $fetch(`/api/declarations/by-period?periodName=${encoded}`);
+
+      // index.get.js returns shape { data: [...] }, but some endpoints may return a raw array.
+      const items = Array.isArray(response?.data)
+        ? response.data
+        : Array.isArray(response)
+        ? response
+        : [];
+
+      // replace local declarations with the filtered list for the given period
+      declarations.value = items;
+
+      return items;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : String(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+  // ANCHOR_END: fetchDeclarationsByPeriodName
+
   // ANCHOR: fetchDeclarationById
   const fetchDeclarationById = async (id) => {
     if (!id) {
@@ -312,6 +344,7 @@ export const useDeclarationStore = defineStore("Declaration", () => {
     fetchDeclarationTypes,
     fetchDeclarations,
     fetchDeclarationById,
+    fetchDeclarationsByPeriodName,
     createDeclaration,
     createNextPeriodDeclarations,
     updateDeclarationsDueDateByTypeAndPeriod,

@@ -6,4 +6,11 @@
 </template>
 
 
-<script setup>  </script>
+<script setup> 
+
+const test = ref('test');
+
+// const runtimeConfig = useRuntimeConfig();
+
+// console.log('runtimeConfig:', runtimeConfig);
+</script>

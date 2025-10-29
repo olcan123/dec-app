@@ -213,3 +213,26 @@ export const deleteDeclarationsByPeriodName = async (periodName) => {
   }
 };
 // ANCHOR_END: deleteDeclarationsByPeriodName
+
+
+//ANCHOR: listDeclarationsByPeriodName
+export const listDeclarationsByPeriodName = async (periodName) => {
+  try {
+    if (!periodName) {
+      throw new Error('Period name is required');
+    }
+
+    const normalized = String(periodName);
+    console.debug('[service] listDeclarationsByPeriodName:', normalized);
+
+    const result = await prisma.declaration.findMany({
+      where: { periodName: normalized },
+    });
+
+    return result;
+  } catch (error) {
+    console.error('Error listing declarations by period name:', error);
+    throw new Error('Could not list declarations for period');
+  }
+};
+// ANCHOR_END: listDeclarationsByPeriodName

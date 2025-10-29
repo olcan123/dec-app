@@ -1,18 +1,18 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
-const isMenuOpen = ref(false)
+const isMenuOpen = ref(false);
 
 const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-}
+  isMenuOpen.value = !isMenuOpen.value;
+};
 
 const navItems = [
-  { name: 'Ana Sayfa', href: '/' },
-  { name: 'Müşteriler', href: '/customers' },
-  { name: 'Beyannameler', href: '/declarations' },
-  { name: 'Beyanname Türleri', href: '/declarations/types' },
-]
+  { name: "Ana Sayfa", href: "/" },
+  { name: "Müşteriler", href: "/customers" },
+  { name: "Beyannameler", href: "/declarations" },
+  { name: "Beyanname Türleri", href: "/declarations/types" },
+];
 </script>
 
 <template>
@@ -21,8 +21,16 @@ const navItems = [
       <div class="flex justify-between items-center h-16">
         <!-- Logo -->
         <div class="flex-shrink-0">
-          <NuxtLink to="/" class="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors">
-            Logo
+          <NuxtLink
+            to="/"
+            class="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            <NuxtImg
+              provider="cloudinary"
+              src="/Logo_kefeom.png"
+              class="h-8 me-3"
+              alt="FCD Logo"
+            />
           </NuxtLink>
         </div>
 
@@ -37,9 +45,11 @@ const navItems = [
           >
             {{ item.name }}
           </NuxtLink>
-          
+
           <!-- CTA Button -->
-          <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+          <button
+            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
             Başlayın
           </button>
         </div>
@@ -97,8 +107,10 @@ const navItems = [
           >
             {{ item.name }}
           </NuxtLink>
-          
-          <button class="w-full mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+
+          <button
+            class="w-full mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
             Başlayın
           </button>
         </div>
