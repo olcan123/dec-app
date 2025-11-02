@@ -32,9 +32,9 @@ WORKDIR /app
 
 # Copy necessary files from builder
 COPY --from=builder /app/.output /app/.output
-COPY --from=builder /app/node_modules/.prisma /app/node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma /app/node_modules/@prisma
+COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/prisma /app/prisma
+COPY --from=builder /app/package.json /app/package.json
 
 # Set environment to production
 ENV NODE_ENV=production
