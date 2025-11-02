@@ -1,8 +1,6 @@
 import type { PrismaClient as PrismaClientType } from "@prisma/client";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-const { PrismaClient } = require("@prisma/client") as typeof import("@prisma/client");
+// "node:module" ve "createRequire" satırlarını silin
+import { PrismaClient } from "@prisma/client"; // Doğrudan import edin
 
 const prismaClientSingleton = () => {
   return new PrismaClient();

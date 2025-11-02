@@ -108,7 +108,8 @@ import {
 } from "~/utils/declarations/form";
 import { mapFormValuesToDeclarationPayload } from "~/utils/declarations/payload";
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
+
 const declarationStore = useDeclarationStore();
 const declarationNoteStore = useDeclarationNoteStore();
 
@@ -145,11 +146,7 @@ const onSubmit = handleSubmit(async (values) => {
       }
     }
 
-    toast.success({
-      title: "Beyanname",
-      message: "Başarıyla oluşturuldu.",
-    });
-
+    $successToast("Beyanname başarıyla oluşturuldu.");
     const customerId = created?.customerId ?? payload.customerId;
     const periodName = created?.periodName ?? payload.periodName;
 
@@ -163,10 +160,7 @@ const onSubmit = handleSubmit(async (values) => {
     resetForm();
   } catch (error) {
     console.error("Beyanname oluşturulamadı", error);
-    toast.error({
-      title: "Beyanname",
-      message: "Oluşturulurken bir hata oluştu.",
-    });
+    $failToast("Beyanname oluşturulamadı. Lütfen tekrar deneyin.");
   }
 });
 </script>

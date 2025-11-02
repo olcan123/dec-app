@@ -58,7 +58,7 @@ import {
   customerFormSchema,
 } from "~/utils/customers/form";
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 const customerStore = useCustomerStore();
 
 const { handleSubmit } = useForm({
@@ -70,16 +70,10 @@ const onSubmit = handleSubmit(async (values) => {
   try {
     await customerStore.createCustomer(values);
     // Optionally, you can add a success message or redirect here
-    toast.success({
-      title: "Müşteri",
-      message: "Başarıyla oluşturuldu.",
-    });
+    $successToast("Müşteri başarıyla oluşturuldu.");
   } catch (error) {
     console.error("Şirket oluşturulamadı", error);
-    toast.error({
-      title: "Müşteri",
-      message: "Oluşturulurken bir hata oluştu.",
-    });
+    $failToast("Müşteri oluşturulamadı. Lütfen tekrar deneyin.");
   }
 });
 </script>

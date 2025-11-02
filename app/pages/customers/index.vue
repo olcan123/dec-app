@@ -83,10 +83,9 @@ const searchFields = [
   "notes",
 ];
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 const customerStore = useCustomerStore();
 const { customers, loading, error } = storeToRefs(customerStore);
-
 
 const fetchCustomersSafely = async () => {
   try {
@@ -97,7 +96,6 @@ const fetchCustomersSafely = async () => {
 };
 
 await fetchCustomersSafely();
-
 
 const refresh = async () => {
   await fetchCustomersSafely();
@@ -113,7 +111,7 @@ const removeCustomer = async (customerId) => {
   }
 
   const confirmed = window.confirm(
-    "Müşteriyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+    "Müşteriyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
   );
 
   if (!confirmed) {
@@ -122,16 +120,10 @@ const removeCustomer = async (customerId) => {
 
   try {
     await customerStore.deleteCustomer(customerId);
-    toast.success({
-      title: "Müşteri",
-      message: "Başarıyla silindi.",
-    });
+    $successToast("Müşteri başarıyla silindi.");
   } catch (err) {
     console.error("Müşteri silinemedi", err);
-    toast.error({
-      title: "Müşteri",
-      message: "Silinirken bir hata oluştu.",
-    });
+    $failToast("Silinirken bir hata oluştu.");
   }
 };
 

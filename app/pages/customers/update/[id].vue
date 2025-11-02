@@ -60,7 +60,7 @@ import {
   customerFormSchema,
 } from "~/utils/customers/form";
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 const customerStore = useCustomerStore();
 const { customer } = storeToRefs(customerStore);
 
@@ -97,16 +97,10 @@ const onSubmit = handleSubmit(async (values) => {
 
   try {
     await customerStore.updateCustomer(customerId.value, values);
-    toast.success({
-      title: "Müşteri",
-      message: "Başarıyla güncellendi.",
-    });
+    $successToast("Müşteri başarıyla güncellendi.");
   } catch (submitError) {
     console.error("Şirket güncellenemedi", submitError);
-    toast.error({
-      title: "Müşteri",
-      message: "Güncellenirken bir hata oluştu.",
-    });
+    $failToast("Müşteri güncellenemedi. Lütfen tekrar deneyin.");
   }
 });
 </script>

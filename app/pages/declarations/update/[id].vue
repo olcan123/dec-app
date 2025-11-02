@@ -110,7 +110,7 @@ import {
 } from "~/utils/declarations/form";
 import { mapFormValuesToDeclarationPayload } from "~/utils/declarations/payload";
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 const route = useRoute();
 
 const declarationStore = useDeclarationStore();
@@ -129,10 +129,7 @@ const declarationId = computed(() => {
 
 const loadFormData = async () => {
   if (!declarationId.value) {
-    toast.error({
-      title: "Beyanname",
-      message: "Geçersiz beyan ID'si.",
-    });
+    $failToast("Geçersiz beyanname ID'si.");
     navigateTo("/declarations");
     return;
   }
@@ -151,10 +148,7 @@ const loadFormData = async () => {
 await loadFormData();
 
 if (!declaration.value) {
-  toast.error({
-    title: "Beyanname",
-    message: "Beyan bulunamadı.",
-  });
+  $failToast("Beyanname bulunamadı.");
   navigateTo("/declarations");
 }
 
@@ -200,10 +194,7 @@ const onSubmit = handleSubmit(async (values) => {
       }
     }
 
-    toast.success({
-      title: "Beyanname",
-      message: "Başarıyla güncellendi.",
-    });
+    $successToast("Beyanname başarıyla güncellendi.");
 
     const customerId = updated?.customerId ?? payload.customerId;
     const periodName = updated?.periodName ?? payload.periodName;
@@ -216,10 +207,7 @@ const onSubmit = handleSubmit(async (values) => {
     }
   } catch (error) {
     console.error("Beyanname güncellenemedi", error);
-    toast.error({
-      title: "Beyanname",
-      message: "Güncellenirken bir hata oluştu.",
-    });
+    $failToast("Güncellenirken bir hata oluştu.");
   }
 });
 </script>

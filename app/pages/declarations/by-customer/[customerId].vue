@@ -155,7 +155,7 @@ const ensureData = async () => {
 
 await ensureData();
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 const showNextPeriodModal = ref(false);
 
 const declarationsForCustomer = computed(() =>
@@ -317,10 +317,7 @@ const handleSelectPeriod = (periodName) => {
 
 const openNextPeriodModal = () => {
   if (!canGenerateNextPeriod.value) {
-    toast.error({
-      title: "Beyanname",
-      message: "Kopyalanacak dönem bulunamadı.",
-    });
+    +$failToast("Kopyalanacak uygun dönem bulunamadı.");
     return;
   }
 
@@ -339,18 +336,12 @@ const confirmAndDeleteCustomerDeclarations = async () => {
   try {
     await declarationStore.deleteDeclarationsByCustomerId(customerId.value);
 
-    toast.success({
-      title: "Beyanlar Silindi",
-      message: "Seçili müşteriye ait tüm beyanlar silindi.",
-    });
+    $successToast("Beyanlar başarıyla silindi.");
 
     await refresh();
   } catch (err) {
     console.error("Beyanlar silinemedi", err);
-    toast.error({
-      title: "Hata",
-      message: "Beyanlar silinemedi. Lütfen tekrar deneyin.",
-    });
+    $failToast("Beyanlar silinemedi. Lütfen tekrar deneyin.");
   }
 };
 
@@ -366,18 +357,12 @@ const confirmAndDeletePeriodFromList = async (periodToDelete) => {
   try {
     await declarationStore.deleteDeclarationsByPeriodName(periodToDelete);
 
-    toast.success({
-      title: "Dönem Silindi",
-      message: `${periodToDelete} dönemine ait beyanlar silindi.`,
-    });
+    $successToast("Dönem başarıyla silindi.");
 
     await refresh();
   } catch (err) {
     console.error("Dönem silinemedi", err);
-    toast.error({
-      title: "Hata",
-      message: "Dönem silinirken bir hata oluştu. Lütfen tekrar deneyin.",
-    });
+    $failToast("Dönem silinirken bir hata oluştu. Lütfen tekrar deneyin.");
   }
 };
 
@@ -398,19 +383,13 @@ const handleNextPeriodConfirm = async (items) => {
       items: payloadItems,
     });
 
-    toast.success({
-      title: "Beyanname",
-      message: "Sonraki dönem başarıyla oluşturuldu.",
-    });
+    $successToast("Sonraki dönem başarıyla oluşturuldu.");
 
     showNextPeriodModal.value = false;
     await refresh();
   } catch (error) {
     console.error("Sonraki dönem oluşturulamadı", error);
-    toast.error({
-      title: "Beyanname",
-      message: "Sonraki dönem oluşturulamadı.",
-    });
+    $failToast("Sonraki dönem oluşturulamadı. Lütfen tekrar deneyin.");
   }
 };
 

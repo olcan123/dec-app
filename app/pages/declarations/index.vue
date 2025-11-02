@@ -154,7 +154,7 @@ const loadInitialData = async () => {
 
 await loadInitialData();
 
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 
 const showBulkNextPeriodModal = ref(false);
 const bulkModalItems = ref([]);
@@ -331,10 +331,7 @@ const openBulkNextPeriodModal = () => {
   const items = bulkCandidateItems.value;
 
   if (!items.length) {
-    toast.error({
-      title: "Beyanname",
-      message: "Kopyalanacak uygun dönem bulunamadı.",
-    });
+    $failToast("Kopyalanacak uygun dönem bulunamadı.");
     return;
   }
 
@@ -357,20 +354,14 @@ const handleBulkNextPeriodConfirm = async (items) => {
       })),
     });
 
-    toast.success({
-      title: "Beyanname",
-      message: "Tüm müşteriler için sonraki dönemler oluşturuldu.",
-    });
+    $successToast("Tüm müşteriler için sonraki dönemler oluşturuldu.");
 
     showBulkNextPeriodModal.value = false;
     bulkModalItems.value = [];
     await refresh();
   } catch (error) {
     console.error("Toplu sonraki dönem oluşturulamadı", error);
-    toast.error({
-      title: "Beyanname",
-      message: "Toplu sonraki dönem oluşturulamadı.",
-    });
+    $failToast("Toplu sonraki dönem oluşturulamadı. Lütfen tekrar deneyin.");
   }
 };
 

@@ -99,13 +99,14 @@ definePageMeta({
 });
 
 const route = useRoute();
-const toast = useToast();
+const { $successToast, $failToast } = useNuxtApp();
 
 const customerStore = useCustomerStore();
 const declarationStore = useDeclarationStore();
 
 const { customers } = storeToRefs(customerStore);
-const { declarations, declarationTypes, loading } = storeToRefs(declarationStore);
+const { declarations, declarationTypes, loading } =
+  storeToRefs(declarationStore);
 
 const ensureData = async () => {
   const tasks = [];
@@ -138,12 +139,12 @@ await ensureData();
 const customerId = computed(() => route.params.customerId ?? null);
 const periodParam = computed(() => route.params.periodName ?? "");
 const periodName = computed(() =>
-  periodParam.value ? decodeURIComponent(String(periodParam.value)) : "",
+  periodParam.value ? decodeURIComponent(String(periodParam.value)) : ""
 );
 
 const customerName = computed(() => {
   const customer = customers.value.find(
-    (item) => String(item.id) === String(customerId.value ?? ""),
+    (item) => String(item.id) === String(customerId.value ?? "")
   );
   return customer?.title ?? `Müşteri #${customerId.value}`;
 });
@@ -190,15 +191,17 @@ const declarationsForPeriod = computed(() =>
   declarations.value.filter((declaration) => {
     const sameCustomer =
       String(declaration.customerId ?? "") === String(customerId.value ?? "");
-    const samePeriod = String(declaration.periodName ?? "") === periodName.value;
+    const samePeriod =
+      String(declaration.periodName ?? "") === periodName.value;
     return sameCustomer && samePeriod;
-  }),
+  })
 );
 
 const declarationRows = computed(() =>
   declarationsForPeriod.value.map((item) => ({
     id: item.id,
-    typeName: typeMap.value.get(Number(item.typeId)) ?? `Tür #${item.typeId ?? "-"}`,
+    typeName:
+      typeMap.value.get(Number(item.typeId)) ?? `Tür #${item.typeId ?? "-"}`,
     dueDate: formatDate(item.dueDate),
     completionDate: formatDate(item.completionDate),
     status: item.status ?? "",
@@ -207,7 +210,7 @@ const declarationRows = computed(() =>
     paidAmount: formatCurrency(item.paidAmount),
     lateFee: formatCurrency(item.lateFee),
     // reminderDays: item.reminderDays ?? "-",
-  })),
+  }))
 );
 
 const columns = [
@@ -227,11 +230,14 @@ const columns = [
 const searchFields = ["id", "status", "priority", "typeName"];
 
 const pageTitle = computed(
-  () => `${customerName.value} • ${periodName.value || "-"}`,
+  () => `${customerName.value} • ${periodName.value || "-"}`
 );
 
 const pageDescription = computed(
-  () => `Bu sayfada ${periodName.value || "belirtilmemiş"} dönemine ait beyanlar listelenir`,
+  () =>
+    `Bu sayfada ${
+      periodName.value || "belirtilmemiş"
+    } dönemine ait beyanlar listelenir`
 );
 
 const refresh = async () => {
@@ -271,23 +277,19 @@ const handleDeleteDeclaration = async (declarationId) => {
     return;
   }
 
-  const confirmed = window.confirm("Bu beyanı silmek istediğinize emin misiniz?");
+  const confirmed = window.confirm(
+    "Bu beyanı silmek istediğinize emin misiniz?"
+  );
   if (!confirmed) {
     return;
   }
 
   try {
     await declarationStore.deleteDeclaration(declarationId);
-    toast.success({
-      title: "Beyanname",
-      message: "Başarıyla silindi.",
-    });
+    $successToast("Beyan başarıyla silindi.");
   } catch (error) {
     console.error("Beyan silinemedi", error);
-    toast.error({
-      title: "Beyanname",
-      message: "Silinirken bir hata oluştu.",
-    });
+    $failToast("Beyan silinirken bir hata oluştu.");
   }
 };
 
@@ -325,7 +327,9 @@ const statusBadgeClass = (value) => {
     Overdue: "border-rose-200 bg-rose-50 text-rose-700",
   };
 
-  return `${base} ${palette[value] ?? "border-slate-200 bg-slate-50 text-slate-600"}`;
+  return `${base} ${
+    palette[value] ?? "border-slate-200 bg-slate-50 text-slate-600"
+  }`;
 };
 
 const priorityBadgeClass = (value) => {
@@ -339,7 +343,9 @@ const priorityBadgeClass = (value) => {
     Urgent: "border-rose-200 bg-rose-50 text-rose-700",
   };
 
-  return `${base} ${palette[value] ?? "border-slate-200 bg-slate-50 text-slate-600"}`;
+  return `${base} ${
+    palette[value] ?? "border-slate-200 bg-slate-50 text-slate-600"
+  }`;
 };
 
 const resolveRowHighlight = (row) => {
@@ -362,19 +368,12 @@ const confirmAndDeletePeriod = async () => {
   try {
     await declarationStore.deleteDeclarationsByPeriodName(periodName.value);
 
-    toast.success({
-      title: 'Dönem Silindi',
-      message: `${periodName.value} dönemine ait tüm beyanlar silindi.`,
-    });
-
+    $successToast("Dönem başarıyla silindi.");
     // go back to customer period list
     goBack();
   } catch (err) {
-    console.error('Dönem silinemedi', err);
-    toast.error({
-      title: 'Hata',
-      message: 'Dönem silinirken bir hata oluştu. Lütfen tekrar deneyin.',
-    });
+    console.error("Dönem silinemedi", err);
+    $failToast("Dönem silinirken bir hata oluştu.");
   }
 };
 </script>
